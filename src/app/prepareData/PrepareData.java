@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.jasper.util.UniqueAttributesImpl;
+
 import util.MysqlConnection;
 import app.entity.Line;
 import app.entity.ReportDetail;
@@ -19,13 +21,22 @@ public class PrepareData {
 
 	String tableName = "report20150615";
 	
+	private static PrepareData uniqueInstance = null;
 	boolean first = true;
-	public PrepareData(){
-		if(first == true){
-			getRoadInfo();
-			first = false;
-		}
+	private PrepareData(){
+		allRoadDetail = getRoadInfo();  
 	}
+	public static PrepareData  getInstance(){
+		if(uniqueInstance == null){
+			synchronized(PrepareData.class){
+				if(uniqueInstance == null ){
+					uniqueInstance = new PrepareData();
+				}
+			}
+		}
+		return uniqueInstance;
+	}
+	
 	// 将传入的 时间 转换成时间戳，用于查询
 	public String changeToTimeStamp(String date){
 		// 时间的格式应该为  2015-06-15 12:30:00

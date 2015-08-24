@@ -90,7 +90,9 @@
 		}
 	</script>
 	
-	<script type="text/javascript" src="jquery.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+    <script src="http://malsup.github.com/jquery.form.js"></script> 
+	
 	<script>
 		<!-- 这里写ajax更新的代码,用于实时更新-->
 		function update(){
@@ -107,7 +109,7 @@
 	<div id="mapContainer"></div>
 		<%! 
 		// 声明的部分，只会初始化一次
-	    PrepareData pp = new PrepareData();
+	    PrepareData pp = PrepareData.getInstance();
 	    //PrepareData.getRoadInfo(); // 首先加载所有道路的信息，会在PrepareData的构造器中加载一次
 		// 根据用户提交表单设置查询条件
 		%>
