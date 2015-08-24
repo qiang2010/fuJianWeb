@@ -23,18 +23,14 @@
 		}else{
 			direction = Integer.parseInt(dir);
 		}
-		out.println("time： " +time);
-		out.println("road:"+roadName);
-		out.println("dir:"+dir);
-		
-		
+	 //out.println("time: " +time);
+	//	out.println("road:"+roadName);
+	//	out.println("dir:"+dir);
 		// 开始的时候是在这里 将 List<Line> 编码成json格式的，后来发现总是找不到包，于是放到了ParepareData中
 		// 实际上， 由于是java web项目，依赖的包必须在WEB-INF 下的lib中放一个。
 		String ans = preData.getAllLinePointJSON(time, roadName, direction); 		
-
-
 	    out.print(ans);
 	    // 直接输出的数据，就会发给index.jsp
-	    out.print("ajax data： "+time +":" + roadName+" "+ direction);
+	  //out.print("ajax data:"+time +":" + roadName+" "+ direction);
 	    
 %>

@@ -66,6 +66,7 @@
 		}
 	</style>
 	<script type="text/javascript">
+	
 		function setFunc(){
 			var road = new Array("G15","G70","G72","G76","G1501","G1514","S35","G3","G25","G319","G324");
 			var select = document.getElementById("roadSelect");
@@ -88,65 +89,103 @@
 				directionOP.options[1].selected = true;
 			}
 		}
-		var polyline;
-	</script>
-	    
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
-    <script src="http://malsup.github.com/jquery.form.js"></script> 
-	
-	<script>
-		//<!-- 这里写ajax更新的代码,用于实时更新-->
-		$(document).ready(function(){
-				var options = {
-					beforeSubmit: showRequest,
-					success: showResponse
-				};
+		 //  传入一个数组，用于画图	
+		  function drawAllLines( allLines){
+			var oneLine;
+			allPolylines = new Array();
+			for(var j=0;j < allLines.length; j++ ){
+				oneLine = allLines[j];
+				allPolylines[j]=drawOneLine(oneLine[0],oneLine[1],oneLine[2],oneLine[3],oneLine[4]);
 				
-				$('#dataSetForm').submit(function(){
-					$(this).ajaxSubmit(options);
-					
-					return false;  
-				});
-			 });
-		// 当点击提交按钮首先之行这里的函数。
-		function showRequest(formData, jqForm, options){
-		    // formData is an array; here we use $.param to convert it to a string to display it 
-		    // but the form plugin does this for you automatically when it submits the data 
-			var queryString = $.param(formData);
-		    alert('submit'+queryString);
-		    
-		    // here we could return false to prevent the form from being submitted; 
-		    // returning anything other than false will allow the form submit to continue 
-		    return true;
-		    
-		}
-		// 提交后的回调函数
-		function showResponse(responseText,statusText){
-			// for normal html responses, the first argument to the success callback 
-		    // is the XMLHttpRequest object's responseText property 
-		 
-		    // if the ajaxForm method was passed an Options Object with the dataType 
-		    // property set to 'xml' then the first argument to the success callback 
-		    // is the XMLHttpRequest object's responseXML property 
-		 
-		    // if the ajaxForm method was passed an Options Object with the dataType 
-		    // property set to 'json' then the first argument to the success callback 
-		    // is the json data object returned by the server 
-		    if(statusText == "success"){
-		    	// 	
-		    	 alert("jq");
-		    	 alert(responseText);
-		    	 // 首先将原来地图上的数据消除
-		    	 for(var i = 0 ; i < allPolylines.length;i++){
-		    		 allPolylines[i].setMap(null);	 
-		    	 }
-		    	 // 根据ajax获取的数据更新地图
-		    	 
-
 			}
-		}
+		}	
+		function drawOneLine(sLong,sLat,eLong,eLat,color){
+			
+			twoPoints = new Array();
+			twoPoints.push(new AMap.LngLat(sLong,sLat));
+			twoPoints.push(new AMap.LngLat(eLong,eLat));
+			polyline = new AMap.Polyline({ 
+				   path:twoPoints, //设置线覆盖物路径
+				   strokeColor:color, //线颜色
+				   strokeOpacity:1, //线透明度 
+				   strokeWeight:3, //线宽
+				   strokeStyle:"solid", //线样式
+			   	   strokeDasharray:[10,5] //补充线样式 
+			   }); 
+			polyline.setMap(map);
+			return polyline;
+		} 
+		
+		 
 	</script>
+
+	   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+       <script  type="text/javascript" src="http://malsup.github.com/jquery.form.js"></script>  
 	
+    
+	<script type="text/javascript">
+	//<!-- 这里写ajax更新的代码,用于实时更新-->
+	$(document).ready(function(){
+			var options = {
+				beforeSubmit: showRequest,
+				success: showResponse
+			};
+			
+			$('#dataSetForm').submit(function(){
+				$(this).ajaxSubmit(options);
+				// !!! Important !!! 
+		        // always return false to prevent standard browser submit and page navigation 
+				return false;  
+			});
+		 });
+	// 当点击提交按钮首先之行这里的函数。
+	function showRequest(formData, jqForm, options){
+	    // formData is an array; here we use $.param to convert it to a string to display it 
+	    // but the form plugin does this for you automatically when it submits the data 
+		//var queryString = $.param(formData);
+	   // alert('submit'+queryString);
+	    
+	    // here we could return false to prevent the form from being submitted; 
+	    // returning anything other than false will allow the form submit to continue 
+	    return true;
+	    
+	}
+	// 提交后的回调函数
+	function showResponse(responseText,statusText){
+		// for normal html responses, the first argument to the success callback 
+	    // is the XMLHttpRequest object's responseText property 
+	 
+	    // if the ajaxForm method was passed an Options Object with the dataType 
+	    // property set to 'xml' then the first argument to the success callback 
+	    // is the XMLHttpRequest object's responseXML property 
+	 
+	    // if the ajaxForm method was passed an Options Object with the dataType 
+	    // property set to 'json' then the first argument to the success callback 
+	    // is the json data object returned by the server 
+	    
+	    if(statusText == "success"){
+	    	 //alert("jq");
+	    	// alert("res:"+responseText);
+	    	 // 首先将原来地图上的数据消除
+	    	 for(var i = 0 ; i < allPolylines.length;i++){
+	    		 allPolylines[i].setMap(null);	 
+	    	 }
+	    	 // 根据ajax获取的数据更新地图
+	    	 // 解析返回的json数据，重新画图
+	    	var jsonArr = eval(responseText);
+
+	    	allPolylines = new Array();
+	    	for(var j =0 ; j < jsonArr.length; j++){
+	    		//alert(jsonArr[0].startLong);
+	    		allPolylines[j] = drawOneLine(jsonArr[j].startLong,jsonArr[j].startLat,jsonArr[j].endLong,jsonArr[j].endLat,jsonArr[j].color);
+	         }
+	    	//alert("success");
+			
+		}else{
+			alert("failed");
+		}
+	}
+</script>
 </head>
 
 <body onload="setFunc()">
@@ -176,15 +215,14 @@
 	    }else{
 	    	direction = Integer.parseInt(dir);
 	    }
-	    out.println("time： " +time);
-	    out.println("road:"+roadName);
-	    out.println("dir:"+dir);
+	   // out.println("time： " +time);
+	   // out.println("road:"+roadName);
+	    //out.println("dir:"+dir);
 	    
-	    
-	    
+
 	    List<Line> lines = pp.getAllLinePoint(time, roadName, direction);
 	    //out.print("<h1> "+ lines.size()+ "</h1>");
-	    out.print(lines.size());
+	    //out.print(lines.size());
 		%>
 	<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=ef5828a2b1f622d83e5044efc83c730b"></script>
 	<script type="text/javascript">
@@ -217,28 +255,15 @@
 		});
  
 	</script>
-	<script>		
+	<script>	
+	
+	    var polyline;
 
-		var oneLine;
-		var twoPoints;
 		var allPolylines = new Array();
-		for(var j=0;j < allLines.length; j++ ){
-			oneLine = allLines[j];
-			twoPoints = new Array();
-			twoPoints.push(new AMap.LngLat(oneLine[0],oneLine[1]));
-			twoPoints.push(new AMap.LngLat(oneLine[2],oneLine[3]));
-			polyline = new AMap.Polyline({ 
-				   path:twoPoints, //设置线覆盖物路径
-				   strokeColor:oneLine[4], //线颜色
-				   strokeOpacity:1, //线透明度 
-				   strokeWeight:3, //线宽
-				   strokeStyle:"solid", //线样式
-			   	   strokeDasharray:[10,5] //补充线样式 
-			   }); 
-			
-			polyline.setMap(map);
-			allPolylines[j]=polyline;
-		}
+ 		drawAllLines(allLines);
+		
+ 		
+ 	
 		
 	</script>
 	
