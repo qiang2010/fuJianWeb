@@ -88,9 +88,10 @@
 				directionOP.options[1].selected = true;
 			}
 		}
+		var polyline;
 	</script>
 	    
-	    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
     <script src="http://malsup.github.com/jquery.form.js"></script> 
 	
 	<script>
@@ -134,11 +135,16 @@
 		    if(statusText == "success"){
 		    	// 	
 		    	 alert("jq");
-		    	 polyline.setMap(null);	
-		    }
-		    
+		    	 alert(responseText);
+		    	 // 首先将原来地图上的数据消除
+		    	 for(var i = 0 ; i < allPolylines.length;i++){
+		    		 allPolylines[i].setMap(null);	 
+		    	 }
+		    	 // 根据ajax获取的数据更新地图
+		    	 
+
+			}
 		}
-		
 	</script>
 	
 </head>
@@ -215,13 +221,13 @@
 
 		var oneLine;
 		var twoPoints;
-		var polyline;
+		var allPolylines = new Array();
 		for(var j=0;j < allLines.length; j++ ){
 			oneLine = allLines[j];
 			twoPoints = new Array();
 			twoPoints.push(new AMap.LngLat(oneLine[0],oneLine[1]));
 			twoPoints.push(new AMap.LngLat(oneLine[2],oneLine[3]));
-			 polyline = new AMap.Polyline({ 
+			polyline = new AMap.Polyline({ 
 				   path:twoPoints, //设置线覆盖物路径
 				   strokeColor:oneLine[4], //线颜色
 				   strokeOpacity:1, //线透明度 
@@ -229,7 +235,9 @@
 				   strokeStyle:"solid", //线样式
 			   	   strokeDasharray:[10,5] //补充线样式 
 			   }); 
-			 polyline.setMap(map);
+			
+			polyline.setMap(map);
+			allPolylines[j]=polyline;
 		}
 		
 	</script>

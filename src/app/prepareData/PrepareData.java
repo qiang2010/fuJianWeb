@@ -10,8 +10,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.jasper.util.UniqueAttributesImpl;
-
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import util.MysqlConnection;
 import app.entity.Line;
 import app.entity.ReportDetail;
@@ -86,6 +86,28 @@ public class PrepareData {
 		System.out.println("load road info:"+allRoadDetail.size());
 		return allRoadDetail;
 	}
+	
+	
+	// 该函数会返回数据的json格式 
+	public String getAllLinePointJSON(String timeDate,String roadName,int direction){
+		
+		List<Line> lines = getAllLinePoint(timeDate, roadName, direction); 		
+
+		JSONArray jsonArray = new JSONArray();
+		Line tempLine;
+		for(int i =0; i < lines.size(); i++){
+			tempLine = lines.get(i);
+			JSONObject  job = new JSONObject();
+			job.put("startLong", tempLine.getStartLong());
+			job.put("startLat",  tempLine.getStartLat());
+			job.put("endLong", 	 tempLine.getEndLong());
+			job.put("endLat", 	 tempLine.getEndLat());
+			job.put("color", 	 tempLine.getColor());
+			jsonArray.add(job);
+		}
+		return jsonArray.toString();
+	}
+	
 	
 	// 获取所有根据条件需要返回的数据
 	public List<Line> getAllLinePoint(String timeDate,String roadName,int direction){
