@@ -89,28 +89,66 @@
 			}
 		}
 	</script>
-	
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+	    
+	    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
     <script src="http://malsup.github.com/jquery.form.js"></script> 
 	
 	<script>
-		<!-- 这里写ajax更新的代码,用于实时更新-->
-		function update(){
-			
-			
-			
+		//<!-- 这里写ajax更新的代码,用于实时更新-->
+		$(document).ready(function(){
+				var options = {
+					beforeSubmit: showRequest,
+					success: showResponse
+				};
+				
+				$('#dataSetForm').submit(function(){
+					$(this).ajaxSubmit(options);
+					
+					return false;  
+				});
+			 });
+		// 当点击提交按钮首先之行这里的函数。
+		function showRequest(formData, jqForm, options){
+		    // formData is an array; here we use $.param to convert it to a string to display it 
+		    // but the form plugin does this for you automatically when it submits the data 
+			var queryString = $.param(formData);
+		    alert('submit'+queryString);
+		    
+		    // here we could return false to prevent the form from being submitted; 
+		    // returning anything other than false will allow the form submit to continue 
+		    return true;
+		    
 		}
-	
+		// 提交后的回调函数
+		function showResponse(responseText,statusText){
+			// for normal html responses, the first argument to the success callback 
+		    // is the XMLHttpRequest object's responseText property 
+		 
+		    // if the ajaxForm method was passed an Options Object with the dataType 
+		    // property set to 'xml' then the first argument to the success callback 
+		    // is the XMLHttpRequest object's responseXML property 
+		 
+		    // if the ajaxForm method was passed an Options Object with the dataType 
+		    // property set to 'json' then the first argument to the success callback 
+		    // is the json data object returned by the server 
+		    if(statusText == "success"){
+		    	// 	
+		    	 alert("jq");
+		    	 polyline.setMap(null);	
+		    }
+		    
+		}
+		
 	</script>
 	
 </head>
-<body onload="setFunc()">
 
+<body onload="setFunc()">
 	<div id="mapContainer"></div>
 		<%! 
 		// 声明的部分，只会初始化一次
 	    PrepareData pp = PrepareData.getInstance();
-	    //PrepareData.getRoadInfo(); // 首先加载所有道路的信息，会在PrepareData的构造器中加载一次
+	    // 首先加载所有道路的信息，会在PrepareData的构造器中加载一次
 		// 根据用户提交表单设置查询条件
 		%>
 		
@@ -140,6 +178,7 @@
 	    
 	    List<Line> lines = pp.getAllLinePoint(time, roadName, direction);
 	    //out.print("<h1> "+ lines.size()+ "</h1>");
+	    out.print(lines.size());
 		%>
 	<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=ef5828a2b1f622d83e5044efc83c730b"></script>
 	<script type="text/javascript">
@@ -162,7 +201,6 @@
 		    <% } %>
 			//添加线覆盖物
 		
-			
 		//初始化地图对象，加载地图
 		var map = new AMap.Map("mapContainer",{
 				resizeEnable: true,
@@ -171,16 +209,10 @@
 		      	zoom:8 //地图显示的缩放级别
 		     })
 		});
+ 
 	</script>
-		<script>		
-		//初始化地图对象，加载地图
-		var map = new AMap.Map("mapContainer",{
-				resizeEnable: true,
-			  	view: new AMap.View2D({
-		      	center:new AMap.LngLat(117.628264,25.797241),//地图中心点
-		      	zoom:8 //地图显示的缩放级别
-		     })
-		});
+	<script>		
+
 		var oneLine;
 		var twoPoints;
 		var polyline;
@@ -202,8 +234,8 @@
 		
 	</script>
 	
-		<div id="tip">  
-	<form method="post" action="index.jsp">
+  <div id="tip">  
+	<form id="dataSetForm"  method="post" action="./ajaxGetData/ajaxData.jsp" >
 	
 		<input type="button" value="实时更新" onClick=""/>
 		
@@ -223,6 +255,6 @@
 		 <input type="button" value="设置时间"/>
 		 <input type="submit" value="提交设置"/>
 	</form>
-	</div>
+  </div>
 </body>
 </html>
