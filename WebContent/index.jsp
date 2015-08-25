@@ -179,12 +179,72 @@
 	    		//alert(jsonArr[0].startLong);
 	    		allPolylines[j] = drawOneLine(jsonArr[j].startLong,jsonArr[j].startLat,jsonArr[j].endLong,jsonArr[j].endLat,jsonArr[j].color);
 	         }
-	    	//alert("success");
+	    //	alert("update success");
 			
 		}else{
 			alert("failed");
 		}
 	}
+	
+	
+	var timeInterval = 100;
+	var timeID;
+	// 当点击 实时更新按钮的时候，这里设置 实时更新的开始时间，选择的道路方向等。
+	function updatePrepare(){
+ 	
+		//var myTime = getCurTime();
+		alert("here");
+		timeID = window.setInterval(updateRealTime,3000);
+	}
+	
+	function updateRealTime(){
+		// 这里首先模拟点击submit
+		
+		document.getElementById("submitButton").click();
+		// 然后修改时间，设置成下一个五分钟。
+		// 我们这里将时间转换成时间戳，然后加上  5*60，这样就是下一个五分钟的时间戳。
+		var time = $("#timeText").val();
+		time = time.replace(/-/g,"/");
+		
+		var date = new Date(time);
+		var timeString = new Date(date.getTime()+5*60*1000);
+		
+		$("#timeText").val(getCurTime(timeString));
+		
+	}
+	function stopUpdate(){
+		window.clearInterval(timeID);
+	}
+	
+	function resetTime(){
+		var myTime = getCurTime();
+		$("#timeText").val(myTime);
+	}
+
+	function getCurTime(cur){
+		var curDate ;
+		if(cur == null)
+		  curDate = new Date();
+		else curDate = cur;
+		var year = curDate.getFullYear();
+		var month = curDate.getMonth()+1;
+		var day = curDate.getDate();
+		var hour = curDate.getHours();
+		var min = curDate.getMinutes();
+		var minUnit = min%10;
+		min = min - minUnit;
+		if(minUnit < 5) minUnit = 0;
+		else minUnit = 5;
+		min = min+ minUnit;
+		//2015-06-15 15:30:00
+		if(month<10) month = "0"+month;
+		if(day<10) day = "0"+day;
+		if(min<10) min = "0"+min;
+		var myTime = ""+year+"-"+month+"-"+day+" "+hour+":"+min+":00";
+		return myTime;
+	}
+
+	
 </script>
 </head>
 
@@ -202,7 +262,7 @@
 	    String time = request.getParameter("time");
 		if(time == null){
 			out.println("time null");
-			time = "2015-06-15 12:30:00";
+			time = "2015-06-15 15:30:00";
 		}
 	    String  roadName = request.getParameter("roads");
 	    if(roadName == null){
@@ -262,16 +322,13 @@
 		var allPolylines = new Array();
  		drawAllLines(allLines);
 		
- 		
- 	
-		
 	</script>
 	
   <div id="tip">  
 	<form id="dataSetForm"  method="post" action="./ajaxGetData/ajaxData.jsp" >
 	
-		<input type="button" value="实时更新" onClick=""/>
-		
+		<input type="button" value="实时更新" onClick="updatePrepare()"/>
+		<input type="button" value="停止更新" onClick="stopUpdate()"/>
 		 <select id="roadSelect" name ="roads">
 		 	<option value=0> All</option>
 		 </select>
@@ -284,9 +341,9 @@
 		 </select>
 		 
 		 <input type="button" value="设置方向"/> 
-		 <input type="text" name="time" value="<%=time %>"/>
-		 <input type="button" value="设置时间"/>
-		 <input type="submit" value="提交设置"/>
+		 <input type="text" name="time" id="timeText" value="<%=time %>"/>
+		 <input type="button" value="重置时间" onClick="resetTime()" />
+		 <input type="submit" id="submitButton" value="提交设置"/>
 	</form>
   </div>
 </body>

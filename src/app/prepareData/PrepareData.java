@@ -40,6 +40,8 @@ public class PrepareData {
 	// 将传入的 时间 转换成时间戳，用于查询
 	public String changeToTimeStamp(String date){
 		// 时间的格式应该为  2015-06-15 12:30:00
+		
+		
 		 SimpleDateFormat format = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
 
 
@@ -112,12 +114,17 @@ public class PrepareData {
 	// 获取所有根据条件需要返回的数据
 	public List<Line> getAllLinePoint(String timeDate,String roadName,int direction){
 		
-		String time = changeToTimeStamp(timeDate);
+		
+		// 要求传入的timeDate是时间戳
+		//如果传入长度太大，说明不是时间戳。
+		if(timeDate.length() >10)
+			timeDate = changeToTimeStamp(timeDate);
+		
 		
 		List<Line> ansLines = new ArrayList<Line>();
 		
 		
-		List<ReportDetail> report = getReport(time,direction,roadName);
+		List<ReportDetail> report = getReport(timeDate,direction,roadName);
 		ReportDetail tempRD ;
 		String tempName;
 		int tempSegId;
@@ -156,7 +163,7 @@ public class PrepareData {
 		
 		String[] roadNames = {"","G15","G70","G72","G76","G1501","G1514","S35","G3","G25","G319","G324"};
 		
-		String selectSql = "select * from "+tableName+" where time="+time+" and direction="+dir;
+		String selectSql = "select * from "+tableName+" where time="+time+" and direction="+dir +" and roadName != 'G324' and roadName != 'G319' ";
 		int roadSelect = Integer.parseInt(roadName);  
 		if(roadSelect != 0){
 			selectSql +=" and roadName='"+roadNames[roadSelect]+"'"; 
