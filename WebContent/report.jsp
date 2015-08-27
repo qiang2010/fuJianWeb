@@ -24,8 +24,9 @@
 		
 		#tip{
 			position:absolute;
-			bottom:20px;
+			bottom:60px;
 			right:0;
+			left:50px;
 			height:80px;
 			font-size:12px;
 		}
@@ -249,6 +250,7 @@
 </head>
 
 <body onload="setFunc()">
+
 	<div id="mapContainer"></div>
 		<%! 
 		// 声明的部分，只会初始化一次
@@ -324,9 +326,9 @@
 		
 	</script>
 	
-  <div id="tip">  
+  <div id="tip"> 
+   <h1>路况信息</h1>
 	<form id="dataSetForm"  method="post" action="./ajaxGetData/ajaxData.jsp" >
-	
 		<input type="button" value="实时更新" onClick="updatePrepare()"/>
 		<input type="button" value="停止更新" onClick="stopUpdate()"/>
 		 <select id="roadSelect" name ="roads">
