@@ -4,20 +4,30 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 
 
 public class MysqlConnection {
 
-	String mysqlUrl = "jdbc:mysql://localhost:3306/roadfujian?user=root&password=jq";
+
 	Connection con=null;
 	Statement stat = null;
 	public Connection getConnection(){
+		Properties pro = new Properties();
 		
-		
+		String driver = null;
+		String mysqlUrl = null;
+		String user = null;
+	    String password = null;
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			con = DriverManager.getConnection(mysqlUrl);
+			pro.load(this.getClass().getClassLoader().getResourceAsStream("DB.properties"));
+			driver = pro.getProperty("driver");
+			mysqlUrl = pro.getProperty("url");
+			user = pro.getProperty("user");
+			password = pro.getProperty("password");
+			Class.forName(driver);
+			con = DriverManager.getConnection(mysqlUrl, user, password);
 		} catch ( Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
