@@ -24,7 +24,7 @@
 		
 		#tip{
 			position:absolute;
-			bottom:60px;
+			bottom:100px;
 			right:0;
 			left:50px;
 			height:80px;
@@ -67,6 +67,9 @@
 		}
 	</style>
 	<script type="text/javascript">
+		function toReportHTML(){
+			parent.location.href="index.html";
+		}
 	
 		function setFunc(){
 			var road = new Array("G15","G70","G72","G76","G1501","G1514","S35","G3","G25","G319","G324");
@@ -81,11 +84,9 @@
 				if(i+1 == <%=request.getParameter("roads")%>)
 					option.selected=true;
 			}
-			
-			// 设置方向为之前选中的方向
-			var directionOP = document.getElementById("directionSelect");
-			if(0 == <%=request.getParameter("direction") %>){
-				directionOP.options[0].selected = true;
+			var intervalSelect = document.getElementById("interval");
+			if(10 == <%=request.getParameter("interval")  %>){
+				intervalSelect.options[0].selected = true;
 			}else{
 				directionOP.options[1].selected = true;
 			}
@@ -254,7 +255,7 @@
 	<div id="mapContainer"></div>
 		<%! 
 		// 声明的部分，只会初始化一次
-	    PrepareData pp = PrepareData.getInstance();
+	    PrepareData pp = new PrepareData();
 	    // 首先加载所有道路的信息，会在PrepareData的构造器中加载一次
 		// 根据用户提交表单设置查询条件
 		%>
@@ -270,19 +271,14 @@
 	    if(roadName == null){
 	    	roadName = "0";
 	    }
-	    String dir = request.getParameter("direction");
-	    int direction = 1;//
-	    if(dir == null){
-	    	direction = 1;
-	    }else{
-	    	direction = Integer.parseInt(dir);
-	    }
+	    //String dir = request.getParameter("direction");
+	   // int direction = 0;//
 	   // out.println("time： " +time);
 	   // out.println("road:"+roadName);
 	    //out.println("dir:"+dir);
 	    
 
-	    List<Line> lines = pp.getAllLinePoint(time, roadName, direction);
+	    List<Line> lines = pp.getAllLinePoint_Forecast(time, roadName, 0);
 	    //out.print("<h1> "+ lines.size()+ "</h1>");
 	    //out.print(lines.size());
 		%>
@@ -327,13 +323,12 @@
 	</script>
 	
   <div id="tip">  
-    <h1>预测报告</h1>
-	<form id="dataSetForm"  method="post" action="./ajaxGetData/ajaxData.jsp" >
-	
-		
-		 <select id="interval" name="direction">
-		 	<option value="1"  > 5分钟</option>
-			<option value="2" > 10分钟</option>
+    <input type="button" onClick="toReportHTML()" value="跳转到报告界面"/>
+    <h1>预测报告0方向</h1>
+	<form id="dataSetForm"  method="post" action="./ajaxGetData/forecastAjaxData.jsp" >
+		 <select id="interval" name="interval">
+		 	<option value="5"  > 5分钟</option>
+			<option value="10" selected="selected"> 10分钟</option>
 		 </select>
 		
 	 	 <input type="button" value="时间间隔"/>
@@ -343,8 +338,7 @@
 		 <input type="button" value="选择道路"/> 
 		 
 		 <select id="directionSelect" name="direction">
-		 	<option value="0"  > 0  方向</option>
-			<option value="1" > 1  方向</option>
+		 	<option value="0" selected = "selected" > 0  方向</option>
 		 </select>
 		 
 		 <input type="button" value="设置方向"/> 

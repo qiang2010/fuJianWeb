@@ -1,5 +1,7 @@
 package app.prepareData;
 
+
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -17,14 +19,13 @@ import net.sf.json.JSONObject;
 import road.RoadModel;
 import road.SegModel;
 import smooth.HistorySmooth;
-import smooth.THfiltration;
 import util.FileUtil;
 import util.MysqlConnection;
 import app.entity.Line;
 import app.entity.ReportDetail;
 import app.entity.RoadInfo;
 
-public class PrepareData {
+public class PrepareForecastData {
 
 	String tableName = "report20150615";
 	
@@ -152,6 +153,10 @@ public class PrepareData {
 	}
 	
 	
+	
+	
+	
+	
 	// 获取所有根据条件需要返回的数据
 	public List<Line> getAllLinePoint(String timeDate,String roadName,int direction){
 		
@@ -252,29 +257,19 @@ public class PrepareData {
 	
 	private  int historySmoothHistorySize = 6;
 	private  int THhistorySize = 13;
-	private  int historySize ;
-	private  int forecastMethodChoose = 1;
-	public List<Line> getAllLinePoint_Forecast(String timeDate,String roadName,int direction){
-		
-		
-		System.out.println("direction :" + direction);
-		// 根据不同的预测方法，设置一些相应的参数。
-		forecastMethodChoose(forecastMethodChoose); 
-		
+	public List<Line> getAllLinePoint_HistorySmooth_Forecast(String timeDate,String roadName,int direction){
 		
 		//roadsMap = (HashMap<String,RoadModel>)new FileUtil("D:/code_workspace64/webTest/nilinks/roadObj").readObj();	
-		
 		// 首先根据传入的参数读取数据库中的数据，用于构建roadMap,历史平滑
-		List<String> timestampList = getTimestampList(timeDate,historySize);
-		inithistorySpeedSize(roadsMap, historySize);
+		List<String> timestampList = getTimestampList(timeDate,historySmoothHistorySize);
+		inithistorySpeedSize(roadsMap, historySmoothHistorySize);
 //		int size = timestampList.size();
 		String tempTime;
-		for( int i = 0 ; i < historySize; i ++){
+		for( int i = 0 ; i < historySmoothHistorySize; i ++){
 			tempTime = timestampList.get(i);
 			// 获取时间，然后根据roadNamd，direction分别查询。
 			getReport_forecast(tempTime, direction, roadName, i);
 		}
-		
 		int roadSelect = Integer.parseInt(roadName);
 		boolean chooseRoad = false;
 		String roadNameChooseString = null;
@@ -289,15 +284,9 @@ public class PrepareData {
 			if(chooseRoad && !road.getName().equals(roadNameChooseString)) continue;
 			List<SegModel> segs = road.getSegs();
 			double [][] speed = historySpeed.get(road.getName());
-			for(int i=1;i<segs.size();i++){ 
+			for(int i=0;i<segs.size();i++){ 
 				tempReportDetail = new ReportDetail();
-				// 这里speed，根据不同的算法计算预测的值。。。。。
-				if(forecastMethodChoose == 0)
-					tempReportDetail.setSpeed( HistorySmooth.historyAverage(speed[i]));
-
-				if(forecastMethodChoose == 1)
-					tempReportDetail.setSpeed( THfiltration.filtering(speed, segs, i, direction));
-				
+				tempReportDetail.setSpeed( HistorySmooth.historyAverage(speed[i]));
 				tempReportDetail.setSegId(i);
 				tempReportDetail.setRoadName(road.getName());
 				forecast.add(tempReportDetail);
@@ -306,25 +295,6 @@ public class PrepareData {
 		
 		System.out.println("forecast size:"+forecast.size());
 		
-
-		return formatToLineList(forecast);
-	}
-	
-	public void forecastMethodChoose(int choose){
-		if (choose == 1) {
-			THfiltration.setHistorySize(THhistorySize);
-			historySize = THhistorySize;
-		}
-		if(choose == 0){
-			historySize = historySmoothHistorySize;
-		}
-		
-	}
-	
-	
-	
-	//将预测的结果List<ReportDetail> 转换成  List<Line> 的格式用于返回。
-	private List<Line>  formatToLineList(List<ReportDetail> fore){
 		// 转换成 line
 		List<Line> ansLines = new LinkedList<Line>();
 		ReportDetail tempRD ;
@@ -334,15 +304,14 @@ public class PrepareData {
 		RoadInfo s1,s2;
 		Line line;
 		double speed;
-		for(int i=1;i<fore.size();i++){
-			tempRD = fore.get(i);
+		for(int i=1;i<forecast.size();i++){
+			tempRD = forecast.get(i);
 			speed  = tempRD.getSpeed();
-			if(speed < 0)continue;
 			tempName = tempRD.getRoadName();
 			tempSegId = tempRD.getSegId();
 			startSegKey = tempName+"_"+tempSegId;
 			endSegkey   = tempName+"_"+(tempSegId+1);
-			//System.out.println(startSegKey +"  " + endSegkey+" "+speed);
+			System.out.println(startSegKey +"  " + endSegkey+" "+speed);
 			if(allRoadDetail.containsKey(startSegKey) && allRoadDetail.containsKey(endSegkey)){
 				s1 = allRoadDetail.get(startSegKey);
 				s2 = allRoadDetail.get(endSegkey);
@@ -354,11 +323,8 @@ public class PrepareData {
 			}
 		}
 		System.out.println("ans lines size:"+ansLines.size());
-		
 		return ansLines;
 	}
-	
-	
 	
 	private void inithistorySpeedSize(Map<String,RoadModel> roads,int size){
 		for(RoadModel road:roads.values()){
@@ -368,11 +334,8 @@ public class PrepareData {
 	
 	// 该函数会返回预测结果数据的json格式 
 	public String getAllLinePointJSON_Forecast(String timeDate,String roadName,int direction){
-
-		System.out.println("direction0000 :" + direction);
 		
-		
-		List<Line> lines = getAllLinePoint_Forecast(timeDate, roadName, direction);
+		List<Line> lines = getAllLinePoint_HistorySmooth_Forecast(timeDate, roadName, direction);
 		// 根据已有数据构建road map
 		// String 是road的名字，RoadModel包括，路段的seg List，速度[speed1,spee2].
 //		Map<String,RoadModel> roads = getRoadMap(changeToTimeStamp(timeDate), roadName);
@@ -403,7 +366,7 @@ public class PrepareData {
 		MysqlConnection con = new MysqlConnection();
 		Statement stat = con.getStatement(con.getConnection());
 		// and direction="+dir +" 废弃掉方向
-		String selectSql = "select * from "+tableName+" where time="+time+" and direction="+dir +" and roadName != 'G324' and roadName != 'G319' ";
+		String selectSql = "select * from "+tableName+" where time="+time+"  and roadName != 'G324' and roadName != 'G319' ";
 		int roadSelect = Integer.parseInt(roadName);  
 		if(roadSelect != 0){
 			selectSql +=" and roadName='"+roadNames[roadSelect]+"'"; 
@@ -416,7 +379,7 @@ public class PrepareData {
 			while(rs.next()){
 				tempSpeed = historySpeed.get(rs.getString("roadName"));
 				tempSpeed[rs.getInt("segId")][timeIndex] = rs.getDouble("speed");
-				//System.out.println(tempSpeed[rs.getInt("segId")][timeIndex]);
+				System.out.println(tempSpeed[rs.getInt("segId")][timeIndex]);
 				historySpeed.put(rs.getString("roadName"),tempSpeed);
 			}
 		} catch (SQLException e) {
@@ -428,7 +391,7 @@ public class PrepareData {
 	
 	// 首先获取 相应时间的 roadName segId direction speed 构建用于转换成nilink的roads map
 		// string 是路名 
-		public Map<String,RoadModel> getRoadMap33(String time,String roadName,int dir){
+		public Map<String,RoadModel> getRoadMap(String time,String roadName,int dir){
 			
 			MysqlConnection con = new MysqlConnection();
 			Statement stat = con.getStatement(con.getConnection());

@@ -24,7 +24,7 @@
 		
 		#tip{
 			position:absolute;
-			bottom:60px;
+			bottom:100px;
 			right:0;
 			left:50px;
 			height:80px;
@@ -68,6 +68,10 @@
 	</style>
 	<script type="text/javascript">
 	
+	
+	function toForecastHTML(){
+		parent.location.href="indexForecast.html";
+	}
 		function setFunc(){
 			var road = new Array("G15","G70","G72","G76","G1501","G1514","S35","G3","G25","G319","G324");
 			var select = document.getElementById("roadSelect");
@@ -254,7 +258,7 @@
 	<div id="mapContainer"></div>
 		<%! 
 		// 声明的部分，只会初始化一次
-	    PrepareData pp = PrepareData.getInstance();
+	    PrepareData pp = new  PrepareData();
 	    // 首先加载所有道路的信息，会在PrepareData的构造器中加载一次
 		// 根据用户提交表单设置查询条件
 		%>
@@ -282,7 +286,7 @@
 	    //out.println("dir:"+dir);
 	    
 
-	    List<Line> lines = pp.getAllLinePoint(time, roadName, direction);
+	    List<Line> lines = pp.getAllLinePoint(time, roadName,0);
 	    //out.print("<h1> "+ lines.size()+ "</h1>");
 	    //out.print(lines.size());
 		%>
@@ -320,14 +324,15 @@
 	<script>	
 	
 	    var polyline;
-
 		var allPolylines = new Array();
+		//alert(allLines);
  		drawAllLines(allLines);
 		
 	</script>
 	
   <div id="tip"> 
-   <h1>路况信息</h1>
+   <input type="button"  value="跳转到预测界面" onClick="toForecastHTML()" />
+   <h1>路况信息0方向</h1>
 	<form id="dataSetForm"  method="post" action="./ajaxGetData/ajaxData.jsp" >
 		<input type="button" value="实时更新" onClick="updatePrepare()"/>
 		<input type="button" value="停止更新" onClick="stopUpdate()"/>
@@ -339,7 +344,6 @@
 		 
 		 <select id="directionSelect" name="direction">
 		 	<option value="0"  > 0  方向</option>
-			<option value="1" > 1  方向</option>
 		 </select>
 		 
 		 <input type="button" value="设置方向"/> 
